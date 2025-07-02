@@ -32,6 +32,7 @@ class User extends Authenticatable
         'password',
         'remember_token',
     ];
+ protected $guarded = []; // untuk mengizinkan semua field
 
     /**
      * Get the attributes that should be cast.
