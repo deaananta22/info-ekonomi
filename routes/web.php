@@ -1,63 +1,28 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\KepalaController;
-use App\Http\Controllers\KIController;
-use App\Http\Controllers\TimController;
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\LandingController;
+use App\Http\Controllers\KepalaController;
+use App\Http\Controllers\TimController;
+use App\Http\Controllers\KIController;
 
-Route::get('/', function () {
-    return view('welcome');
-});
+// Halaman utama / landing
+Route::get('/', [AuthController::class, 'showLoginForm'])->name('landing');
 
-Auth::routes();
-
-Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
-// Kepala
-Route::middleware(['auth', 'role:kepala'])->group(function () {
-    Route::get('/kepala/dashboard', [KepalaController::class, 'index']);
-});
-
-// KI
-Route::middleware(['auth', 'role:ki'])->group(function () {
-    Route::get('/ki/dashboard', [KIController::class, 'index']);
-});
-
-// Tim
-Route::middleware(['auth', 'role:tim'])->group(function () {
-    Route::get('/tim/dashboard', [TimController::class, 'index']);
-});
-
+// Login & Logout
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [AuthController::class, 'login']);
+Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-// Dashboard per role
-Route::middleware('auth')->group(function () {
-    Route::get('/kepala/dashboard', [KepalaController::class, 'index']);
-    Route::get('/ki/dashboard', [KIController::class, 'index']);
-    Route::get('/tim/dashboard', [TimController::class, 'index']);
-});
-
-
-Route::get('/', [AuthController::class, 'showLoginForm'])->name('login');
-Route::post('/login', [AuthController::class, 'login']);
-Route::get('/dashboard', [AuthController::class, 'dashboard'])->middleware('auth');
-Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth');
-Route::get('/profile', [AuthController::class, 'profile'])->middleware('auth');
-Route::post('/profile', [AuthController::class, 'updateProfile'])->middleware('auth');
-Route::post('/update-password', [AuthController::class, 'updatePassword'])->middleware('auth');
-Route::get('/login', function () {
-    return view('halamanlog'); // ganti dengan nama view login kamu
-})->name('login');
-
-    Route::get('/', [LandingController::class, 'index'])->name('landing');
-
-
-
-
-// Protected Routes
+// Dashboard sesuai role
 Route::middleware('auth')->group(function () {
     Route::get('/dashboard', [AuthController::class, 'dashboard'])->name('dashboard');
-    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
+    Route::get('/kepala/dashboard', [KepalaController::class, 'index'])->name('kepala.dashboard');
+    Route::get('/tim/dashboard', [TimController::class, 'index'])->name('tim.dashboard');
+    Route::get('/ki/dashboard', [KIController::class, 'index'])->name('ki.dashboard');
+
+    Route::get('/profile', [AuthController::class, 'profile'])->name('profile');
+    Route::post('/profile/update', [AuthController::class, 'updateProfile'])->name('profile.update');
+    Route::post('/profile/password', [AuthController::class, 'updatePassword'])->name('profile.password');
 });
