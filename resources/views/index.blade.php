@@ -10,6 +10,8 @@
           crossorigin="anonymous">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <a href="{{ route('rapat.create') }}" class="btn btn-sm btn-primary">+ Tambah Rapat</a>
+
     
     <style>
         :root {
@@ -419,29 +421,6 @@
             color: white;
         }
 
-        .btn-sm {
-            padding: 8px 12px;
-            font-size: 0.875rem;
-        }
-
-        /* Notification */
-        .notification {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: var(--success-gradient);
-            color: white;
-            padding: 15px 20px;
-            border-radius: 10px;
-            box-shadow: var(--shadow-elegant);
-            z-index: 1100;
-            display: none;
-        }
-
-        .notification.error {
-            background: var(--danger-gradient);
-        }
-
         /* Animations */
         @keyframes fadeInUp {
             from {
@@ -554,90 +533,14 @@
             animation-delay: -1s;
         }
     </style>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>@yield('title', 'Info Ekonomi')</title>
-
-  {{-- Bootstrap & Fonts --}}
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper/swiper-bundle.min.css" />
-
-  <style>
-    body {
-      font-family: 'Inter', sans-serif;
-
-      background: linear-gradient(135deg,rgb(89, 109, 198),rgb(230, 103, 213),rgb(241, 242, 244));
-      color: #fff;
-      margin: 0;
-    }
-
-    .navbar {
-      background:rgb(12, 85, 241);
-      backdrop-filter: blur(20px);
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-    }
-
-    .navbar-brand {
-      font-weight: 700;
-      font-size: 1.4rem;
-      color: #fff;
-    }
-
-    .nav-link, .dropdown-toggle {
-      color: rgba(255, 255, 255, 0.85) !important;
-      font-weight: 500;
-    }
-
-    .nav-link:hover, .dropdown-toggle:hover {
-      color: #fff !important;
-    }
-
-    .btn-login {
-      background: linear-gradient(135deg, #f093fb, #f5576c);
-      color: white;
-      border-radius: 20px;
-      padding: 6px 16px;
-      font-weight: 500;
-    }
-
-    .btn-login {
-    background: linear-gradient(135deg, #667eea, #764ba2);
-    color: white;
-    border-radius: 25px;
-    padding: 10px 24px;
-    font-weight: 600;
-    box-shadow: 0 4px 12px rgba(118, 75, 162, 0.3);
-    transition: all 0.3s ease;
-}
-
-.btn-login:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(251, 251, 251, 0.5);
-}
- 
-.card:hover {
-    transform: translateY(-5px);
-    transition: 0.3s;
-    box-shadow: 0 0 20px rgba(236, 237, 242, 1);
-}
-
-
-    /* .content-wrapper {
-      margin-top: 2rem;
-      background: rgb(234, 230, 230);
-      padding: 2rem;
-      border-radius: 15px;
-      box-shadow: 0 8px 20px rgb(239, 234, 234);
-    } */
-  </style>
 </head>
 <body>
-
-    <!-- Notification -->
-    <div id="notification" class="notification"></div>
+    <!-- Floating background shapes -->
+    <div class="floating-shapes">
+        <div class="shape"></div>
+        <div class="shape"></div>
+        <div class="shape"></div>
+    </div>
 
     <nav class="navbar navbar-expand-lg navbar-dark">
         <div class="container">
@@ -936,134 +839,77 @@
                 const index = meetings.findIndex(m => m.id === editingId);
                 if (index !== -1) {
                     meetings[index] = { ...meetings[index], ...formData };
-                    showNotification('Rapat berhasil diperbarui!', 'success');
                 }
             } else {
                 // Add new meeting
                 const newMeeting = {
-                    id: meetings.length > 0 ? Math.max(...meetings.map(m => m.id)) + 1 : 1,
+                    id: Date.now(),
                     ...formData
                 };
                 meetings.push(newMeeting);
-                showNotification('Rapat berhasil ditambahkan!', 'success');
             }
 
-            refreshTable();
+            renderMeetings();
             toggleForm();
+            showNotification(editingId ? 'Rapat berhasil diperbarui!' : 'Rapat berhasil ditambahkan!', 'success');
         });
 
-        // Edit meeting
-        function editMeeting(id) {
+               function editMeeting(id) {
             const meeting = meetings.find(m => m.id === id);
-            if (!meeting) return;
-
-            // Fill form with meeting data
-            document.getElementById('title').value = meeting.title;
-            document.getElementById('date').value = meeting.date;
-            document.getElementById('time').value = meeting.time;
-            document.getElementById('location').value = meeting.location;
-            document.getElementById('participants').value = meeting.participants;
-            document.getElementById('status').value = meeting.status;
-            document.getElementById('description').value = meeting.description || '';
-
-            // Show form and set editing mode
-            document.getElementById('meetingForm').classList.add('active');
-            document.getElementById('formTitle').textContent = 'Edit Rapat';
-            editingId = id;
+            if (meeting) {
+                editingId = id;
+                document.getElementById('title').value = meeting.title;
+                document.getElementById('date').value = meeting.date;
+                document.getElementById('time').value = meeting.time;
+                document.getElementById('location').value = meeting.location;
+                document.getElementById('participants').value = meeting.participants;
+                document.getElementById('status').value = meeting.status;
+                document.getElementById('description').value = meeting.description;
+                document.getElementById('formTitle').textContent = 'Edit Rapat';
+                document.getElementById('meetingForm').classList.add('active');
+            }
         }
 
         // Delete meeting
         function deleteMeeting(id) {
-            if (confirm('Apakah Anda yakin ingin menghapus rapat ini?')) {
+            if (confirm("Yakin ingin menghapus rapat ini?")) {
                 meetings = meetings.filter(m => m.id !== id);
-                refreshTable();
+                renderMeetings();
                 showNotification('Rapat berhasil dihapus!', 'success');
             }
         }
 
-        // Search meetings
+        // Search functionality
         function searchMeetings() {
-            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-            const filteredMeetings = meetings.filter(meeting => 
-                meeting.title.toLowerCase().includes(searchTerm) ||
-                meeting.location.toLowerCase().includes(searchTerm) ||
-                meeting.description.toLowerCase().includes(searchTerm)
-            );
-            renderTable(filteredMeetings);
+            const keyword = document.getElementById('searchInput').value.toLowerCase();
+            renderMeetings(keyword);
         }
 
-        // Export data
-        function exportData() {
-            const csvContent = [
-                ['Judul', 'Tanggal', 'Waktu', 'Lokasi', 'Peserta', 'Status', 'Deskripsi'],
-                ...meetings.map(m => [
-                    m.title,
-                    m.date,
-                    m.time,
-                    m.location,
-                    m.participants,
-                    m.status,
-                    m.description || ''
-                ])
-            ].map(row => row.join(',')).join('\n');
-
-            const blob = new Blob([csvContent], { type: 'text/csv' });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'rapat_data.csv';
-            a.click();
-            window.URL.revokeObjectURL(url);
-            
-            showNotification('Data berhasil diekspor!', 'success');
-        }
-
-        // Refresh table
-        function refreshTable() {
-            renderTable(meetings);
-        }
-
-        // Render table
-        function renderTable(data) {
+        // Render meetings
+        function renderMeetings(filter = '') {
             const tbody = document.getElementById('meetingTableBody');
             tbody.innerHTML = '';
 
-            if (data.length === 0) {
-                tbody.innerHTML = `
-                    <tr>
-                        <td colspan="6" class="text-center" style="padding: 2rem;">
-                            <i class="fas fa-inbox fa-3x mb-3" style="color: rgba(255, 255, 255, 0.3);"></i>
-                            <br>
-                            <span style="color: rgba(255, 255, 255, 0.6);">Tidak ada rapat ditemukan</span>
-                        </td>
-                    </tr>
-                `;
+            const filteredMeetings = meetings.filter(m => 
+                m.title.toLowerCase().includes(filter) ||
+                m.description.toLowerCase().includes(filter) ||
+                m.location.toLowerCase().includes(filter)
+            );
+
+            if (filteredMeetings.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="text-center">Tidak ada data rapat</td></tr>`;
                 return;
             }
 
-            data.forEach(meeting => {
-                const statusClass = {
-                    'scheduled': 'status-scheduled',
-                    'completed': 'status-completed',
-                    'cancelled': 'status-cancelled'
-                }[meeting.status];
-
-                const statusText = {
-                    'scheduled': 'Dijadwalkan',
-                    'completed': 'Selesai',
-                    'cancelled': 'Dibatalkan'
-                }[meeting.status];
-
+            filteredMeetings.forEach(meeting => {
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td>
-                        <strong>${meeting.title}</strong>
-                        <br>
-                        <small class="text-muted">${meeting.description || 'Tidak ada deskripsi'}</small>
+                        <strong>${meeting.title}</strong><br>
+                        <small class="text-muted">${meeting.description}</small>
                     </td>
                     <td>
-                        <i class="fas fa-calendar me-2"></i>${meeting.date}
-                        <br>
+                        <i class="fas fa-calendar me-2"></i>${meeting.date}<br>
                         <i class="fas fa-clock me-2"></i>${meeting.time}
                     </td>
                     <td>
@@ -1073,13 +919,13 @@
                         <i class="fas fa-users me-2"></i>${meeting.participants} orang
                     </td>
                     <td>
-                        <span class="status-badge ${statusClass}">${statusText}</span>
+                        <span class="status-badge status-${meeting.status}">${statusLabel(meeting.status)}</span>
                     </td>
                     <td>
-                        <button class="btn-modern btn-warning-modern btn-sm" onclick="editMeeting(${meeting.id})" title="Edit">
+                        <button class="btn-modern btn-warning-modern btn-sm" onclick="editMeeting(${meeting.id})">
                             <i class="fas fa-edit"></i>
                         </button>
-                        <button class="btn-modern btn-danger-modern btn-sm" onclick="deleteMeeting(${meeting.id})" title="Hapus">
+                        <button class="btn-modern btn-danger-modern btn-sm" onclick="deleteMeeting(${meeting.id})">
                             <i class="fas fa-trash"></i>
                         </button>
                     </td>
@@ -1088,218 +934,30 @@
             });
         }
 
+        // Helper for status label
+        function statusLabel(status) {
+            switch (status) {
+                case 'scheduled': return 'Dijadwalkan';
+                case 'completed': return 'Selesai';
+                case 'cancelled': return 'Dibatalkan';
+                default: return '';
+            }
+        }
+
         // Show notification
         function showNotification(message, type = 'success') {
             const notification = document.getElementById('notification');
             notification.textContent = message;
             notification.className = `notification ${type === 'error' ? 'error' : ''}`;
             notification.style.display = 'block';
-            
+
             setTimeout(() => {
                 notification.style.display = 'none';
             }, 3000);
         }
 
-        // Search on enter key
-        document.getElementById('searchInput').addEventListener('keyup', function(e) {
-            if (e.key === 'Enter') {
-                searchMeetings();
-            }
-        });
-
-        // Clear search when input is empty
-        document.getElementById('searchInput').addEventListener('input', function(e) {
-            if (e.target.value === '') {
-                refreshTable();
-            }
-        });
-
-        // Logout functionality
-        document.querySelector('.btn-logout').addEventListener('click', function() {
-            if (confirm('Apakah Anda yakin ingin logout?')) {
-                showNotification('Logout berhasil!', 'success');
-                setTimeout(() => {
-                    // In real app, redirect to login page
-                    window.location.href = '/login';
-                }, 1000);
-            }
-        });
-
-        // Initialize the page
-        document.addEventListener('DOMContentLoaded', function() {
-            refreshTable();
-            
-            // Set default date to today
-            const today = new Date().toISOString().split('T')[0];
-            document.getElementById('date').value = today;
-            
-            // Add some entrance animations
-            const elements = document.querySelectorAll('.content-wrapper, .form-card, .table-card');
-            elements.forEach((el, index) => {
-                el.style.animationDelay = `${index * 0.1}s`;
-            });
-        });
-
-        // Add keyboard shortcuts
-        document.addEventListener('keydown', function(e) {
-            // Ctrl/Cmd + N for new meeting
-            if ((e.ctrlKey || e.metaKey) && e.key === 'n') {
-                e.preventDefault();
-                if (!document.getElementById('meetingForm').classList.contains('active')) {
-                    toggleForm();
-                }
-            }
-            
-            // Escape to close form
-            if (e.key === 'Escape') {
-                if (document.getElementById('meetingForm').classList.contains('active')) {
-                    toggleForm();
-                }
-            }
-        });
-
-        // Add tooltip functionality
-        function addTooltips() {
-            const tooltipElements = document.querySelectorAll('[title]');
-            tooltipElements.forEach(element => {
-                element.addEventListener('mouseenter', function() {
-                    const tooltip = document.createElement('div');
-                    tooltip.className = 'tooltip-custom';
-                    tooltip.textContent = this.getAttribute('title');
-                    tooltip.style.cssText = `
-                        position: absolute;
-                        background: var(--dark-gradient);
-                        color: white;
-                        padding: 8px 12px;
-                        border-radius: 6px;
-                        font-size: 0.8rem;
-                        z-index: 1000;
-                        pointer-events: none;
-                        box-shadow: var(--shadow-elegant);
-                    `;
-                    document.body.appendChild(tooltip);
-                    
-                    const rect = this.getBoundingClientRect();
-                    tooltip.style.left = rect.left + 'px';
-                    tooltip.style.top = (rect.top - tooltip.offsetHeight - 5) + 'px';
-                    
-                    this.addEventListener('mouseleave', function() {
-                        if (tooltip.parentNode) {
-                            tooltip.parentNode.removeChild(tooltip);
-                        }
-                    });
-                });
-            });
-        }
-
-        // Initialize tooltips
-        setTimeout(addTooltips, 100);
-
-        // Auto-save form data (optional feature)
-        let autoSaveTimeout;
-        const formInputs = document.querySelectorAll('#meetingFormElement input, #meetingFormElement textarea, #meetingFormElement select');
-        
-        formInputs.forEach(input => {
-            input.addEventListener('input', function() {
-                clearTimeout(autoSaveTimeout);
-                autoSaveTimeout = setTimeout(() => {
-                    // Save to local storage or send to server
-                    console.log('Auto-saving form data...');
-                }, 1000);
-            });
-        });
-
-        // Add meeting statistics
-        function updateStatistics() {
-            const stats = {
-                total: meetings.length,
-                scheduled: meetings.filter(m => m.status === 'scheduled').length,
-                completed: meetings.filter(m => m.status === 'completed').length,
-                cancelled: meetings.filter(m => m.status === 'cancelled').length
-            };
-            
-            // Update page subtitle with stats
-            const subtitle = document.querySelector('.page-subtitle');
-            subtitle.innerHTML = `
-                Kelola semua jadwal rapat dengan mudah dan efisien
-                <br>
-                <small style="color: rgba(255, 255, 255, 0.5);">
-                    Total: ${stats.total} | Dijadwalkan: ${stats.scheduled} | Selesai: ${stats.completed} | Dibatalkan: ${stats.cancelled}
-                </small>
-            `;
-        }
-
-        // Update statistics when table is refreshed
-        const originalRefreshTable = refreshTable;
-        refreshTable = function() {
-            originalRefreshTable();
-            updateStatistics();
-        };
-
-        // Initialize statistics
-        updateStatistics();
+        // Initial render
+        renderMeetings();
     </script>
-  {{-- Navbar --}}
-  <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
-    <div class="container">
-      <a class="navbar-brand" href="#">✨ INFO EKONOMI</a>
-
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-
-      <div class="collapse navbar-collapse" id="navbarContent">
-        <ul class="navbar-nav ms-auto align-items-center gap-2">
-          {{-- Dropdown Tim Kerja --}}
-          <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" id="timDropdown" role="button" data-bs-toggle="dropdown">
-              Tim Kerja
-            </a>
-            <ul class="dropdown-menu dropdown-menu-end">
-              <li><a class="dropdown-item" href="#">Tim Kemiskinan</a></li>
-              <li><a class="dropdown-item" href="#">Tim Kawasan Industri & PSN</a></li>
-              <li><a class="dropdown-item" href="#">Tim Peluang Investasi</a></li>
-              <li><a class="dropdown-item" href="#">Tim CSR</a></li>
-              <li><a class="dropdown-item" href="#">Tim DBH perkebunan</a></li>
-            </ul>
-          </li>
-
-          {{-- Agenda Rapat --}}
-          <li class="nav-item">
-            <a class="nav-link" href="#">Agenda Rapat</a>
-          </li>
-
-          {{-- Login / Logout --}}
-          @auth
-            <li class="nav-item me-2 text-white">
-              Halo, {{ Auth::user()->name }}
-            </li>
-            <li class="nav-item">
-              <form method="POST" action="{{ route('logout') }}">
-                @csrf
-                <button type="submit" class="btn btn-login btn-sm">Logout</button>
-              </form>
-            </li>
-          @else
-            <li class="nav-item">
-              <a class="btn btn-login btn-sm" href="{{ route('login') }}">Login</a>
-            </li>
-          @endauth
-        </ul>
-      </div>
-    </div>
-  </nav>
-
-  {{-- Konten --}}
-  <main class="container">
-    <div class="content-wrapper">
-      @yield('content')
-    </div>
-  </main>
-
-  {{-- Script Bootstrap --}}
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-
 </body>
-
 </html>
