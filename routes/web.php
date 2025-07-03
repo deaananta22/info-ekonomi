@@ -16,13 +16,6 @@ Route::get('/agenda', [AgendaController::class, 'index'])->name('agenda');
 Route::get('/rapat/create', [AgendaController::class, 'createRapat'])->name('rapat.create');
 Route::post('/rapat', [AgendaController::class, 'storeRapat'])->name('rapat.store'); // ini buat simpan data
 Route::get('/notulensi/create', [AgendaController::class, 'createNotulensi'])->name('notulensi.create');
-
-
-
-
-
-
-
 // Protected Routes
 Route::middleware('auth')->group(function () {
     Route::get('/dashboard', [AuthController::class, 'dashboard'])->name('dashboard');
