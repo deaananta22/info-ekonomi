@@ -8,15 +8,10 @@
     "require": {
         "php": "^8.2",
         "jenssegers/mongodb": "^5.4",
-<<<<<<< HEAD
-        "laravel/framework": "^11.0",
+        "laravel/framework": "^12.0",
         "laravel/tinker": "^2.10.1",
         "laravel/ui": "^4.6",
         "mongodb/laravel-mongodb": "^5.4"
-=======
-        "laravel/framework": "^12.0",
-        "laravel/tinker": "^2.10.1"
->>>>>>> ee3a42bbf42e48967b41460237316fd5ebab9d83
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",
