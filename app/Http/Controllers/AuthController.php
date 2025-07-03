@@ -4,134 +4,76 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Validator;
-use App\Models\User;
 
 class AuthController extends Controller
 {
-    /**
-     * Tampilkan form login
-     */
+    // Menampilkan halaman login
     public function showLoginForm()
     {
-        return view('halamanlog'); // pastikan view ini ada di resources/views/halamanlog.blade.php
+        return view('halamanlog'); // Pastikan file resources/views/halamanlog.blade.php ada
     }
 
-    /**
-     * Proses login
-     */
+    // Proses login
     public function login(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'email' => 'required|email',
-            'password' => 'required|min:6',
-        ]);
-
-        if ($validator->fails()) {
-            return back()->withErrors($validator)->withInput($request->only('email'));
-        }
-
         $credentials = $request->only('email', 'password');
 
-        if (Auth::attempt($credentials, $request->filled('remember'))) {
+        if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
-            return redirect()->intended('/dashboard')->with('success', 'Login berhasil!');
+            $user = Auth::user();
+
+            // Arahkan ke dashboard sesuai role
+            return match ($user->role) {
+                'kepala' => redirect()->route('kepala.dashboard'),
+                'tim' => redirect()->route('tim.dashboard'),
+                'ki' => redirect()->route('ki.dashboard'),
+                default => redirect()->route('dashboard'),
+            };
         }
 
-        return back()->withErrors([
-            'email' => 'Email atau password salah.',
-        ])->withInput($request->only('email'));
+        return back()->withErrors(['login_error' => 'Email atau password salah']);
     }
 
-    /**
-     * Tampilkan dashboard
-     */
-    public function dashboard()
-    {
-        $user = Auth::user();
-        return view('dashboard', compact('user')); // pastikan view dashboard tersedia
-    }
-
-    /**
-     * Logout
-     */
+    // Proses logout
     public function logout(Request $request)
     {
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
-
-        return redirect('/')->with('success', 'Anda telah logout');
+        return redirect('/login');
     }
 
-    /**
-     * Tampilkan profil
-     */
+    // Dashboard umum
+    public function dashboard()
+    {
+        return view('dashboard');
+    }
+
+    // Profile
     public function profile()
     {
-        $user = Auth::user();
-        return view('profile', compact('user')); // pastikan file view 'profile.blade.php' ada
+        return view('profile', ['user' => Auth::user()]);
     }
 
-    /**
-     * Update profil user
-     */
     public function updateProfile(Request $request)
     {
         $user = Auth::user();
-
-        $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255|min:2',
-            'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
+        $user->update([
+            'name' => $request->name,
+            'email' => $request->email,
         ]);
 
-        if ($validator->fails()) {
-            return back()->withErrors($validator)->withInput();
-        }
-
-        try {
-            $user->name = $request->name;
-            $user->email = $request->email;
-            $user->save();
-
-            return back()->with('success', 'Profil berhasil diupdate');
-        } catch (\Exception $e) {
-            return back()->withErrors(['error' => 'Terjadi kesalahan saat mengupdate profil']);
-        }
+        return back()->with('success', 'Profil berhasil diperbarui.');
     }
 
-    /**
-     * Update password
-     */
     public function updatePassword(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'current_password' => 'required',
-            'password' => 'required|string|min:8|confirmed',
+        $request->validate(['password' => 'required|min:5|confirmed']);
+        $user = Auth::user();
+        $user->update([
+            'password' => bcrypt($request->password),
         ]);
 
-        if ($validator->fails()) {
-            return back()->withErrors($validator)->with('password_error', true);
-        }
-
-        $user = Auth::user();
-
-        if (!Hash::check($request->current_password, $user->password)) {
-            return back()->withErrors([
-                'current_password' => 'Password lama tidak benar'
-            ])->with('password_error', true);
-        }
-
-        try {
-            $user->password = Hash::make($request->password);
-            $user->save();
-
-            return back()->with('success', 'Password berhasil diupdate');
-        } catch (\Exception $e) {
-            return back()->withErrors([
-                'error' => 'Terjadi kesalahan saat mengupdate password'
-            ])->with('password_error', true);
-        }
+        return back()->with('success', 'Password berhasil diperbarui.');
     }
 }

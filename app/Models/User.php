@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use Jenssegers\Mongodb\Auth\User as Authenticatable;
+use Jenssegers\Mongodb\Auth\User as Authenticatable; // pastikan ini
 use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
