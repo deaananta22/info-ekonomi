@@ -5,7 +5,6 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\KepalaController;
 use App\Http\Controllers\TimController;
 use App\Http\Controllers\KIController;
-=======
 use App\Http\Controllers\AgendaController;
 use App\Http\Controllers\LandingController;
 
